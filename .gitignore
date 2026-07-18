@@ -8,9 +8,9 @@ __pycache__/
 .agents/
 .vscode/
 
-docs/
-output/
-scripts/
-datasets/
-notebooks/
-checkpoints/
+/docs/
+/output/
+/scripts/
+/datasets/
+/notebooks/
+/checkpoints/
