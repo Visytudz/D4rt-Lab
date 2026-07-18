@@ -1,8 +1,6 @@
 # @package _global_
 runtime:
-  framework: lightning
   devices: auto
   num_nodes: 1
   strategy: auto
   mixed_precision: true
-  fail_on_non_finite: true

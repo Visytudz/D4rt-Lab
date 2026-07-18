@@ -14,7 +14,7 @@ class LossTermConfig:
 @dataclass
 class XYZLossConfig(LossTermConfig):
     normalize_by_mean_depth: bool = True
-    value_transform: str = "sign_x_log1p_abs_x"
+    use_signed_log: bool = True
 
 
 @dataclass
@@ -38,7 +38,7 @@ class NormalLossConfig(LossTermConfig):
 
 
 @dataclass
-class ConfidenceAblationConfig(LossTermConfig):
+class ConfidenceTargetConfig(LossTermConfig):
     enabled: bool = False
     weight: float = 0.2
 
@@ -46,11 +46,9 @@ class ConfidenceAblationConfig(LossTermConfig):
 @dataclass
 class ConfidenceLossConfig(LossTermConfig):
     weight: float = 0.2
-    mode: str = "main_text"
-    confidence_penalty: str = "-log(c)"
     confidence_weights_xyz_error: bool = True
-    lconf_ablation: ConfidenceAblationConfig = field(
-        default_factory=ConfidenceAblationConfig
+    confidence_target: ConfidenceTargetConfig = field(
+        default_factory=ConfidenceTargetConfig
     )
 
 
@@ -65,14 +63,12 @@ class ReprojectionLossConfig(LossTermConfig):
 
 @dataclass
 class D4RTLossConfig:
-    total: str = "weighted_sum"
     xyz_3d: XYZLossConfig = field(default_factory=XYZLossConfig)
     uv_2d: UVLossConfig = field(default_factory=UVLossConfig)
     visibility: VisibilityLossConfig = field(default_factory=VisibilityLossConfig)
     displacement: DisplacementLossConfig = field(default_factory=DisplacementLossConfig)
     normal: NormalLossConfig = field(default_factory=NormalLossConfig)
     confidence: ConfidenceLossConfig = field(default_factory=ConfidenceLossConfig)
-    apply_only_where_gt_available: bool = True
     reprojection_uv_from_xyz: ReprojectionLossConfig = field(
         default_factory=ReprojectionLossConfig
     )

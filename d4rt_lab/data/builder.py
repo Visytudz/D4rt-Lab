@@ -156,8 +156,7 @@ def _blendermvs_roots(cfg: DataBuildConfig) -> list[Path]:
     return [Path("data/blendermvs/base-low-res/BlendedMVS")]
 
 
-def _build_blendedmvs_raw(split: str, cfg: DataBuildConfig, manifest_paths: list[str] | None = None):
-    del manifest_paths
+def _build_blendedmvs_raw(split: str, cfg: DataBuildConfig):
     roots = _blendermvs_roots(cfg)
     data_cfg = cfg.data.blendermvs
     augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
@@ -190,8 +189,7 @@ def _build_blendedmvs_raw(split: str, cfg: DataBuildConfig, manifest_paths: list
     )
 
 
-def _build_co3d_raw(split: str, cfg: DataBuildConfig, manifest_paths: list[str] | None = None):
-    del manifest_paths
+def _build_co3d_raw(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.co3d
     root = Path(data_cfg.root)
     augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
@@ -220,8 +218,7 @@ def _build_co3d_raw(split: str, cfg: DataBuildConfig, manifest_paths: list[str] 
     )
 
 
-def _build_kubric_full_robust(split: str, cfg: DataBuildConfig, manifest_paths: list[str] | None = None):
-    del manifest_paths
+def _build_kubric_full_robust(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.kubric_full
     root = Path(data_cfg.root)
     augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
@@ -251,8 +248,7 @@ def _build_kubric_full_robust(split: str, cfg: DataBuildConfig, manifest_paths: 
     )
 
 
-def _build_kubric_full_robust_preprocess(split: str, cfg: DataBuildConfig, manifest_paths: list[str] | None = None):
-    del manifest_paths
+def _build_kubric_full_robust_preprocess(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.kubric_full
     root = Path(data_cfg.processed_root)
     augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
@@ -282,8 +278,7 @@ def _build_kubric_full_robust_preprocess(split: str, cfg: DataBuildConfig, manif
     )
 
 
-def _build_pointodyssey_raw(split: str, cfg: DataBuildConfig, manifest_paths: list[str] | None = None):
-    del manifest_paths
+def _build_pointodyssey_raw(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.pointodyssey
     root = Path(data_cfg.root)
     augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
@@ -310,8 +305,7 @@ def _build_pointodyssey_raw(split: str, cfg: DataBuildConfig, manifest_paths: li
     )
 
 
-def _build_virtual_kitti2_raw(split: str, cfg: DataBuildConfig, manifest_paths: list[str] | None = None):
-    del manifest_paths
+def _build_virtual_kitti2_raw(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.virtual_kitti2
     root = Path(data_cfg.root)
     augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
@@ -347,8 +341,7 @@ def _dynamic_replica_split(split: str, cfg: DataBuildConfig) -> str:
     return {"train": "train", "val": "valid", "test": "test"}.get(split, split)
 
 
-def _build_dynamic_replica_raw(split: str, cfg: DataBuildConfig, manifest_paths: list[str] | None = None):
-    del manifest_paths
+def _build_dynamic_replica_raw(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.dynamic_replica
     root = Path(data_cfg.root)
     reprojection = data_cfg.reprojection_self_check
@@ -384,8 +377,7 @@ def _build_dynamic_replica_raw(split: str, cfg: DataBuildConfig, manifest_paths:
     )
 
 
-def _build_mvs_synth_raw(split: str, cfg: DataBuildConfig, manifest_paths: list[str] | None = None):
-    del manifest_paths
+def _build_mvs_synth_raw(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.mvs_synth
     root = Path(data_cfg.root)
     augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
@@ -430,8 +422,7 @@ def _scannet_split_file(split: str, cfg: DataBuildConfig) -> Path:
     return Path(defaults.get(split, defaults["val"]))
 
 
-def _build_scannet_raw(split: str, cfg: DataBuildConfig, manifest_paths: list[str] | None = None):
-    del manifest_paths
+def _build_scannet_raw(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.scannet
     root = Path(data_cfg.root)
     augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
@@ -455,8 +446,7 @@ def _build_scannet_raw(split: str, cfg: DataBuildConfig, manifest_paths: list[st
     )
 
 
-def _build_tartanair_raw(split: str, cfg: DataBuildConfig, manifest_paths: list[str] | None = None):
-    del manifest_paths
+def _build_tartanair_raw(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.tartanair
     root = Path(data_cfg.root)
     augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
@@ -573,8 +563,7 @@ def _resolve_mixture_weights(cfg: DataBuildConfig, selected_sources: list[str]) 
     return None
 
 
-def _build_mixture_raw(split: str, cfg: DataBuildConfig, manifest_paths: list[str] | None = None):
-    del manifest_paths
+def _build_mixture_raw(split: str, cfg: DataBuildConfig):
     resolved_sources = _resolve_mixture_sources(split, cfg)
     if not resolved_sources:
         raise ValueError("mixture_raw requires at least one source in data.dataset_mixture")
@@ -584,7 +573,7 @@ def _build_mixture_raw(split: str, cfg: DataBuildConfig, manifest_paths: list[st
     for source_name, dataset_type in resolved_sources:
         builder = _dataset_builder(dataset_type)
         try:
-            datasets.append(builder(split=split, cfg=cfg, manifest_paths=None))
+            datasets.append(builder(split=split, cfg=cfg))
             source_names.append(source_name)
         except Exception as exc:
             warnings.warn(f"Skip mixture source '{source_name}' ({dataset_type}): {exc}", stacklevel=2)
@@ -625,21 +614,11 @@ def _dataset_builder(dataset_type: str):
         raise ValueError(f"Unsupported dataset type '{dataset_type}'. Known: [{known}]") from exc
 
 
-def _normalize_manifest_arg(value: str | None) -> list[str] | None:
-    if value is None:
-        return None
-    parts = [item.strip() for item in value.split(",") if item.strip()]
-    return parts or None
-
-
-def build_dataset(split: str, cfg: DataBuildConfig, manifest_arg: str | None = None):
-    manifest_paths = _normalize_manifest_arg(manifest_arg)
+def build_dataset(split: str, cfg: DataBuildConfig):
     dataset_type = (
         cfg.data.train_dataset_type if split == "train" else cfg.data.val_dataset_type
     )
     if dataset_type is None:
-        if manifest_paths:
-            raise ValueError("Manifest-backed training is not supported by D4RT-Lab.")
         if _resolve_mixture_sources(split, cfg):
             dataset_type = "mixture_raw"
         else:
@@ -647,7 +626,7 @@ def build_dataset(split: str, cfg: DataBuildConfig, manifest_arg: str | None = N
 
     dataset_type = _normalize_dataset_type(str(dataset_type))
     builder = _dataset_builder(dataset_type)
-    dataset = builder(split=split, cfg=cfg, manifest_paths=manifest_paths)
+    dataset = builder(split=split, cfg=cfg)
     if isinstance(dataset, list):
         dataset = ConcatDataset(dataset)
     configure_dataset_seeding(dataset, base_seed=cfg.seed)
@@ -665,11 +644,10 @@ def _worker_count(split: str, cfg: DataBuildConfig) -> int:
 def build_dataloader(
     split: str,
     cfg: DataBuildConfig,
-    manifest_arg: str | None = None,
     rank: int = 0,
     world_size: int = 1,
 ) -> DataLoader:
-    dataset = build_dataset(split=split, cfg=cfg, manifest_arg=manifest_arg)
+    dataset = build_dataset(split=split, cfg=cfg)
     batch_size = int(
         cfg.dataloader.train_batch_size
         if split == "train"

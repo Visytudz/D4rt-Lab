@@ -1,11 +1,8 @@
 # @package _global_
 optimizer:
-  type: adamw
   weight_decay: 0.03
-  gradient_clip_l2_norm: 10.0
+  gradient_clip_norm: 10.0
   learning_rate:
-    schedule: cosine_decay
     warmup_steps: 500
     peak_lr: 4.0e-6
     final_lr: 4.0e-7
-

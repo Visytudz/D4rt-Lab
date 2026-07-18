@@ -2,4 +2,4 @@
 logging:
   log_every_steps: 100
   validate_every_steps: 2000
-  validate_max_batches_global: 64
+  validate_max_batches: 64

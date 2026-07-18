@@ -57,9 +57,9 @@ class D4RTSystem(L.LightningModule):
 
     def _shared_step(self, batch: TrainingBatch, stage: str) -> StepOutput:
         predictions = self.model(batch)
-        total, components = self.loss(predictions, batch)
+        total, metrics = self.loss(predictions, batch)
         self.log_dict(
-            {f"{stage}_{name}": value for name, value in components.items()},
+            {f"{stage}_{name}": value for name, value in metrics.items()},
             on_step=stage == "train",
             on_epoch=stage == "val",
             prog_bar=True,

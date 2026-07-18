@@ -10,7 +10,6 @@ from d4rt_lab.model.weights.config import InitializationConfig
 from d4rt_lab.system.config import (
     CheckpointConfig,
     ExperimentConfig,
-    LaunchConfig,
     LoggingConfig,
     OptimizerConfig,
     RuntimeConfig,
@@ -35,7 +34,6 @@ class D4RTConfig:
     checkpoint: CheckpointConfig = field(default_factory=CheckpointConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
     initialization: InitializationConfig = field(default_factory=InitializationConfig)
-    launch: LaunchConfig = field(default_factory=LaunchConfig)
 
     def __post_init__(self) -> None:
         """Validate configuration contracts shared across modules."""

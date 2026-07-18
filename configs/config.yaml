@@ -14,12 +14,6 @@ defaults:
   - experiment: d4rt_48
   - _self_
 
-launch:
-  train_manifest: null
-  val_manifest: null
-  resume_checkpoint_path: null
-  tensorboard: false
-
 hydra:
   job:
     chdir: false

@@ -1,6 +1,3 @@
 # @package _global_
 schedule:
   total_steps: 30000
-  paper_reference_runtime: H200 8-GPU training.
-  local_repro_override:
-    enabled: false

@@ -38,19 +38,15 @@ class D4RTExperiment:
         self.cfg = cfg
         self.output_dir = Path(cfg.experiment.output_dir)
 
-    def _total_steps(self) -> int:
-        override = self.cfg.schedule.local_repro_override
-        return int(
-            override.total_steps if override.enabled else self.cfg.schedule.total_steps
-        )
-
     def _callbacks(self) -> list[L.Callback]:
         checkpoint_dir = self.output_dir / "checkpoints"
         return [
             ModelCheckpoint(
                 dirpath=checkpoint_dir,
                 filename="step_{step:07d}",
-                every_n_train_steps=int(self.cfg.checkpoint.step_save_every_steps),
+                every_n_train_steps=int(self.cfg.checkpoint.save_every_steps),
+                monitor="step",
+                mode="max",
                 save_last=True,
                 save_top_k=int(self.cfg.checkpoint.keep_last_k),
                 save_on_train_epoch_end=False,
@@ -69,13 +65,6 @@ class D4RTExperiment:
             ModelArtifactCallback(self.output_dir, self.cfg.model),
         ]
 
-    def _logger(self) -> L.loggers.Logger | bool:
-        return (
-            TensorBoardLogger(self.output_dir, name="tensorboard", version="")
-            if self.cfg.launch.tensorboard
-            else False
-        )
-
     def fit(self) -> None:
         """Build and execute the configured training experiment."""
         L.seed_everything(int(self.cfg.experiment.seed), workers=True)
@@ -83,7 +72,7 @@ class D4RTExperiment:
         # build the system
         model = D4RTModel(self.cfg.model)
         initialize_model(model, self.cfg.initialization)
-        total_steps = self._total_steps()
+        total_steps = int(self.cfg.schedule.total_steps)
         system = D4RTSystem(
             model,
             D4RTLoss(self.cfg.loss),
@@ -98,8 +87,6 @@ class D4RTExperiment:
             augmentation_cfg=self.cfg.augmentation,
             dataloader_cfg=self.cfg.dataloader,
             seed=self.cfg.experiment.seed,
-            train_manifest=self.cfg.launch.train_manifest,
-            val_manifest=self.cfg.launch.val_manifest,
         )
 
         # build the trainer and run
@@ -110,16 +97,20 @@ class D4RTExperiment:
             strategy=str(self.cfg.runtime.strategy),
             max_steps=total_steps,
             precision="16-mixed" if self.cfg.runtime.mixed_precision else "32-true",
-            gradient_clip_val=float(self.cfg.optimizer.gradient_clip_l2_norm),
+            gradient_clip_val=float(self.cfg.optimizer.gradient_clip_norm),
             log_every_n_steps=int(self.cfg.logging.log_every_steps),
             val_check_interval=int(self.cfg.logging.validate_every_steps),
-            limit_val_batches=int(self.cfg.logging.validate_max_batches_global),
+            limit_val_batches=int(self.cfg.logging.validate_max_batches),
             callbacks=self._callbacks(),
-            logger=self._logger(),
+            logger=TensorBoardLogger(
+                self.output_dir,
+                name="tensorboard",
+                version="",
+            ),
             default_root_dir=self.output_dir,
         )
         trainer.fit(
             system,
             datamodule=data,
-            ckpt_path=self.cfg.launch.resume_checkpoint_path,
+            ckpt_path=self.cfg.checkpoint.resume_checkpoint_path,
         )

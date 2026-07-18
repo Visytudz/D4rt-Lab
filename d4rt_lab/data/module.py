@@ -33,8 +33,6 @@ class D4RTDataModule(L.LightningDataModule):
         Batch size and dataloader worker settings.
     seed : int
         Base seed used by datasets and workers.
-    train_manifest, val_manifest : str or None
-        Optional launch-time manifest paths.
     """
 
     def __init__(
@@ -44,8 +42,6 @@ class D4RTDataModule(L.LightningDataModule):
         augmentation_cfg: AugmentationConfig,
         dataloader_cfg: DataLoaderConfig,
         seed: int,
-        train_manifest: str | None = None,
-        val_manifest: str | None = None,
     ) -> None:
         super().__init__()
         self.cfg = DataBuildConfig(
@@ -55,18 +51,14 @@ class D4RTDataModule(L.LightningDataModule):
             dataloader=dataloader_cfg,
             seed=seed,
         )
-        self.train_manifest = train_manifest
-        self.val_manifest = val_manifest
         self._train_loader: DataLoader | None = None
         self._val_loader: DataLoader | None = None
 
     def setup(self, stage: str | None = None) -> None:
         if stage in (None, "fit") and self._train_loader is None:
-            self._train_loader = build_dataloader(
-                "train", self.cfg, self.train_manifest
-            )
+            self._train_loader = build_dataloader("train", self.cfg)
         if stage in (None, "fit", "validate") and self._val_loader is None:
-            self._val_loader = build_dataloader("val", self.cfg, self.val_manifest)
+            self._val_loader = build_dataloader("val", self.cfg)
 
     def train_dataloader(self) -> DataLoader:
         if self._train_loader is None:
