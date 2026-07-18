@@ -9,7 +9,7 @@ __pycache__/
 .vscode/
 
 /docs/
-/output/
+/outputs/
 /scripts/
 /datasets/
 /notebooks/
