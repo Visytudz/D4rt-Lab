@@ -1,0 +1,10 @@
+# @package data.pointodyssey
+
+root: data/pointodyssey/v2
+split_map:
+  train: train
+  val: test
+  test: test
+max_cached_scenes: 2
+max_scenes: null
+val_clips_per_scene: 1

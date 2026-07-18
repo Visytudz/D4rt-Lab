@@ -12,23 +12,20 @@ from typing import Any
 import numpy as np
 import torch
 from PIL import Image
-from torch.utils.data import Dataset
+from .base import BaseDataset, DatasetConfig
 
-from ..bad_sample_registry import (
-    BadSampleRegistry,
+from .bad_samples import (
     RetryableSampleError,
     failed_paths_from_exception,
     is_retryable_data_error,
 )
 from ..sampling.queries import build_queries_from_depth, build_queries_from_trajectories
 from ..sampling.augmentation import (
-    RawAugmentConfig,
     apply_photometric_augment,
     apply_spatial_crop_images_only,
     build_augment_info,
     sample_frame_indices_with_stride,
 )
-from ..seeding import SeededDatasetMixin
 
 
 def _resize_rgb(path: Path, width: int, height: int) -> np.ndarray:
@@ -161,18 +158,9 @@ def _world_to_cam(x_world: np.ndarray, t_cw: np.ndarray) -> np.ndarray:
 
 
 @dataclass
-class DynamicReplicaRawConfig:
+class DynamicReplicaRawConfig(DatasetConfig):
     root: Path
     split: str
-    clip_frames: int
-    image_size: tuple[int, int]  # (H, W)
-    queries_per_clip: int
-    hard_query_ratio: float
-    prob_t_tgt_equals_t_cam: float
-    training: bool
-    t_src_tgt_delta_choices: tuple[int | None, ...] | None = None
-    t_src_tgt_delta_probs: tuple[float, ...] | None = None
-    max_scenes: int | None = None
     camera_convention: str = "dynamic_replica_v2"
     depth_decode_mode: str = "auto"  # auto|float16_bitcast|uint16_divisor
     depth_divisor: float = 10000.0
@@ -182,9 +170,6 @@ class DynamicReplicaRawConfig:
     reprojection_self_check_max_scenes: int = 1
     reprojection_self_check_max_frames: int = 4
     reprojection_self_check_max_points: int = 4096
-    augment: RawAugmentConfig | None = None
-    bad_sample_registry_path: Path = Path("data/meta/bad_sample.json")
-    max_sample_retries: int = 64
     benchmark_tracking_enabled: bool = False
     benchmark_max_queries: int = 0
 
@@ -209,21 +194,15 @@ class _Scene:
     src_w: int
 
 
-class DynamicReplicaRawDataset(SeededDatasetMixin, Dataset):
+class DynamicReplicaRawDataset(BaseDataset):
     """Builds D4RT samples from Dynamic Replica with explicit t_cam geometry transforms."""
 
     def __init__(self, config: DynamicReplicaRawConfig) -> None:
         self.cfg = config
         self._validate_config()
-        self.h, self.w = config.image_size
-        self._init_dataset_seeding(namespace="dynamic_replica_raw", default_seed=20260319)
-        self.augment = config.augment or RawAugmentConfig()
-        self.bad_registry = BadSampleRegistry(path=config.bad_sample_registry_path)
-        self.max_sample_retries = max(1, int(config.max_sample_retries))
+        super().__init__(config, namespace="dynamic_replica_raw", default_seed=20260319)
         self._resolved_depth_decode_mode: str | None = None
         self._warned_depth_fallback_scenes: set[str] = set()
-        if not config.training:
-            self.augment = RawAugmentConfig()
         split_dir = config.root / config.split
         if not split_dir.exists():
             raise FileNotFoundError(f"Dynamic Replica split dir not found: {split_dir}")

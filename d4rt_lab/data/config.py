@@ -41,7 +41,7 @@ class ReprojectionCheckConfig:
     max_points_per_frame: int = 0
     max_scenes: int = 0
     median_threshold_px: float = 0.0
-    mode: str = ""
+    mode: str = "off"
 
 
 @dataclass
@@ -155,15 +155,12 @@ class MVSSynthConfig:
 
 @dataclass
 class DataConfig:
-    canonical_schema_doc: str = "docs/data_schema.md"
     clip_frames: int = 48
     image_size: tuple[int, int] = (256, 256)
-    train_dataset_type: str = "mixture_raw"
-    val_dataset_type: str = "mixture_raw"
     bad_sample_registry: BadSampleConfig = field(default_factory=BadSampleConfig)
-    train_dataset_mixture: list[str] = field(default_factory=list)
-    val_dataset_mixture: list[str] = field(default_factory=list)
-    mixture_sampling_weights: dict[str, float] = field(default_factory=dict)
+    train_sources: list[str] = field(default_factory=list)
+    val_sources: list[str] = field(default_factory=list)
+    sampling_weights: dict[str, float] = field(default_factory=dict)
     pointodyssey: PointOdysseyConfig = field(default_factory=PointOdysseyConfig)
     dynamic_replica: DynamicReplicaConfig = field(default_factory=DynamicReplicaConfig)
     kubric_full: KubricConfig = field(default_factory=KubricConfig)
@@ -215,9 +212,9 @@ class RandomCropConfig(ToggleAugmentationConfig):
     scale_min_max: tuple[float, float] = (1.0, 1.0)
     aspect_ratio_min_max: tuple[float, float] = (1.0, 1.0)
     random_zoom_in_probability: float = 0.0
-    aspect_ratio_sampling: str = "uniform"
-    sampling_domain: str = "image"
-    boundary_mode: str = "clip"
+    aspect_ratio_sampling: str = "log_uniform"
+    sampling_domain: str = "original"
+    boundary_mode: str = "rejection"
 
 
 @dataclass
@@ -225,7 +222,7 @@ class TemporalSubsampleConfig:
     enabled: bool = True
     stride_min: int = 1
     stride_max: int = 2
-    stride_sampling: str = "uniform"
+    stride_sampling: str = "random"
 
 
 @dataclass

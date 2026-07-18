@@ -1,63 +1,28 @@
 # @package _global_
+
+defaults:
+  - augmentation: none
+  - dataloader: default
+  - dataset@data.pointodyssey: pointodyssey
+  - dataset@data.dynamic_replica: dynamic_replica
+  - dataset@data.kubric_full: kubric
+  - dataset@data.tartanair: tartanair
+  - dataset@data.virtual_kitti2: virtual_kitti2
+  - dataset@data.scannet: scannet
+  - dataset@data.blendermvs: blendermvs
+  - dataset@data.co3d: co3d
+  - dataset@data.mvs_synth: mvs_synth
+  - _self_
+
 data:
-  canonical_schema_doc: docs/data_schema.md
   clip_frames: 48
   image_size:
   - 256
   - 256
-  train_dataset_type: mixture_raw
-  val_dataset_type: mixture_raw
   bad_sample_registry:
     path: data/meta/bad_sample.json
     max_retries: 64
-  pointodyssey:
-    root: data/pointodyssey/v2
-    split_map:
-      train: train
-      val: test
-      test: test
-  dynamic_replica:
-    root: data/dynamic-replica/v2
-    split_map:
-      train: train
-      val: valid
-      test: test
-    camera_convention: dynamic_replica_v2
-    depth_decode_mode: auto
-    depth_divisor: 10000.0
-  kubric_full:
-    root: data/kubric_full/movi-f_full/512x512
-    backend: preprocess
-    processed_root: data/kubric_full/kubric_full_process_v1
-    mmap_mode: r
-    eval_cache_max_items: 2
-    tfds_split_map:
-      train: train
-      val: validation
-      test: validation
-    shuffle_buffer_size: 64
-  tartanair:
-    root: data/tartanair/v2
-    camera_name: lcam_front
-    difficulties:
-    - Data_easy
-    - Data_hard
-    split_modulo: 20
-    max_depth_m: 1000.0
-  virtual_kitti2:
-    root: data/vitual-kitti-2/v2
-    variants:
-    - clone
-    camera_ids:
-    - 0
-  scannet:
-    root: data/scannet/plus-v2/data
-    split_files:
-      train: data/scannet/plus-v2/splits/nvs_sem_train.txt
-      val: data/scannet/plus-v2/splits/nvs_sem_val.txt
-      test: data/scannet/plus-v2/splits/nvs_test.txt
-    source: iphone_rgbd
-  train_dataset_mixture:
+  train_sources:
   - pointodyssey
   - dynamic_replica
   - kubric_full
@@ -67,14 +32,14 @@ data:
   - blendermvs
   - co3d
   - mvs_synth
-  val_dataset_mixture:
+  val_sources:
   - pointodyssey
   - dynamic_replica
   - kubric_full
   - tartanair
   - virtual_kitti2
   - scannet
-  mixture_sampling_weights:
+  sampling_weights:
     pointodyssey: 1.0
     dynamic_replica: 1.2
     kubric_full: 0.8
@@ -84,27 +49,6 @@ data:
     blendermvs: 1.8
     co3d: 1.3
     mvs_synth: 1.2
-  blendermvs:
-    roots:
-    - data/blendermvs/base-low-res/BlendedMVS
-    - data/blendermvs/blendermvs-plus/extracted
-    - data/blendermvs/blendermvs-plusplus/extracted
-    split_modulo: 20
-    max_depth_m: 1000.0
-    depth_clip_percentile: 98.0
-    min_depth_valid_ratio: 0.01
-    min_valid_frames_ratio: 0.5
-  co3d:
-    root: data/co3d/v2
-    use_depth_masks: true
-  mvs_synth:
-    root: data/mvs-synth/v1
-    split_modulo: 20
-    depth_scale: 1.0
-    max_depth_m: 1000.0
-    depth_clip_percentile: 98.0
-    min_depth_valid_ratio: 0.01
-    min_valid_frames_ratio: 0.5
 train_sampling:
   queries_per_clip: 4096
   hard_query_ratio: 0.2

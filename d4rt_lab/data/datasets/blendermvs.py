@@ -13,17 +13,15 @@ import cv2
 import numpy as np
 import torch
 from PIL import Image
-from torch.utils.data import Dataset
+from .base import BaseDataset, DatasetConfig
 
-from ..bad_sample_registry import (
-    BadSampleRegistry,
+from .bad_samples import (
     RetryableSampleError,
     failed_paths_from_exception,
     is_retryable_data_error,
 )
 from ..sampling.queries import build_queries_from_depth
 from ..sampling.augmentation import (
-    RawAugmentConfig,
     apply_photometric_augment,
     apply_spatial_crop_images_only,
     build_augment_info,
@@ -31,7 +29,7 @@ from ..sampling.augmentation import (
     sample_frame_indices_with_stride,
     sanitize_depth_map,
 )
-from ..seeding import SeededDatasetMixin, stable_split_bucket
+from .seeding import stable_split_bucket
 
 
 def _to_split_bucket(name: str, modulo: int = 20) -> int:
@@ -140,18 +138,9 @@ def _parse_cam(path: Path) -> tuple[np.ndarray, np.ndarray]:
 
 
 @dataclass
-class BlendermvsRawConfig:
+class BlendermvsRawConfig(DatasetConfig):
     root: Path
     split: str
-    clip_frames: int
-    image_size: tuple[int, int]  # (H, W)
-    queries_per_clip: int
-    hard_query_ratio: float
-    prob_t_tgt_equals_t_cam: float
-    training: bool
-    t_src_tgt_delta_choices: tuple[int | None, ...] | None = None
-    t_src_tgt_delta_probs: tuple[float, ...] | None = None
-    max_scenes: int | None = None
     split_modulo: int = 20
     split_map: dict[str, str] | None = None
     use_masked_images: bool = False
@@ -160,9 +149,6 @@ class BlendermvsRawConfig:
     min_depth_valid_ratio: float = 0.0
     min_valid_frames_ratio: float = 0.0
     require_complete_frames: bool = False
-    augment: RawAugmentConfig | None = None
-    bad_sample_registry_path: Path = Path("data/meta/bad_sample.json")
-    max_sample_retries: int = 64
     roots: tuple[Path, ...] | None = None
 
 
@@ -189,18 +175,11 @@ class _FilteredDepthSampleError(RetryableSampleError):
     """Sample-level quality filter; retry without persisting a bad-sample entry."""
 
 
-class BlendermvsRawDataset(SeededDatasetMixin, Dataset):
+class BlendermvsRawDataset(BaseDataset):
     """Loads BlenderMVS scene folders and builds D4RT-compatible supervision."""
 
     def __init__(self, config: BlendermvsRawConfig) -> None:
-        self.cfg = config
-        self.h, self.w = config.image_size
-        self._init_dataset_seeding(namespace="blendermvs_raw", default_seed=20260321)
-        self.augment = config.augment or RawAugmentConfig()
-        self.bad_registry = BadSampleRegistry(path=config.bad_sample_registry_path)
-        self.max_sample_retries = max(1, int(config.max_sample_retries))
-        if not config.training:
-            self.augment = RawAugmentConfig()
+        super().__init__(config, namespace="blendermvs_raw", default_seed=20260321)
 
         root_entries = self._configured_roots()
         self.scenes: list[_Scene] = []

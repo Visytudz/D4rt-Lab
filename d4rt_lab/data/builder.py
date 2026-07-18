@@ -28,7 +28,7 @@ from .sampling.augmentation import (
     augment_cfg_from_train_config,
 )
 from .datasets.scannet import ScannetRawConfig, ScannetRawDataset
-from .seeding import configure_dataset_seeding, seed_dataloader_worker
+from .datasets.seeding import configure_dataset_seeding, seed_dataloader_worker
 from .datasets.tartanair import TartanairRawConfig, TartanairRawDataset
 from .datasets.virtual_kitti2 import VirtualKitti2RawConfig, VirtualKitti2RawDataset
 
@@ -116,6 +116,22 @@ def _bad_sample_max_retries(cfg: DataBuildConfig) -> int:
     return int(cfg.data.bad_sample_registry.max_retries)
 
 
+def _dataset_kwargs(split: str, cfg: DataBuildConfig) -> dict[str, object]:
+    """Resolve parameters shared by all single-source dataset configs."""
+    return {
+        "clip_frames": _clip_frames(cfg),
+        "image_size": _image_size(cfg),
+        "queries_per_clip": _queries_per_clip(cfg),
+        "hard_query_ratio": _hard_query_ratio(cfg),
+        "prob_t_tgt_equals_t_cam": _prob_t_tgt_equals_t_cam(cfg),
+        **_query_timestep_delta_kwargs(cfg),
+        "training": split == "train",
+        "augment": augment_cfg_from_train_config(cfg.augmentation),
+        "bad_sample_registry_path": _bad_sample_registry_path(cfg),
+        "max_sample_retries": _bad_sample_max_retries(cfg),
+    }
+
+
 def _normalize_dataset_type(dataset_type: str) -> str:
     key = str(dataset_type).strip().lower()
     aliases = {
@@ -159,20 +175,13 @@ def _blendermvs_roots(cfg: DataBuildConfig) -> list[Path]:
 def _build_blendedmvs_raw(split: str, cfg: DataBuildConfig):
     roots = _blendermvs_roots(cfg)
     data_cfg = cfg.data.blendermvs
-    augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
     split_map = data_cfg.split_map or None
     return BlendermvsRawDataset(
         BlendermvsRawConfig(
             root=roots[0],
             roots=tuple(roots),
             split=str(split),
-            clip_frames=_clip_frames(cfg),
-            image_size=_image_size(cfg),
-            queries_per_clip=_queries_per_clip(cfg),
-            hard_query_ratio=_hard_query_ratio(cfg),
-            prob_t_tgt_equals_t_cam=_prob_t_tgt_equals_t_cam(cfg),
-            **_query_timestep_delta_kwargs(cfg),
-            training=(split == "train"),
+            **_dataset_kwargs(split, cfg),
             split_map=split_map,
             max_scenes=data_cfg.max_scenes,
             split_modulo=data_cfg.split_modulo,
@@ -182,9 +191,6 @@ def _build_blendedmvs_raw(split: str, cfg: DataBuildConfig):
             min_depth_valid_ratio=data_cfg.min_depth_valid_ratio,
             min_valid_frames_ratio=data_cfg.min_valid_frames_ratio,
             require_complete_frames=data_cfg.require_complete_frames,
-            augment=augment_cfg,
-            bad_sample_registry_path=_bad_sample_registry_path(cfg),
-            max_sample_retries=_bad_sample_max_retries(cfg),
         )
     )
 
@@ -192,28 +198,18 @@ def _build_blendedmvs_raw(split: str, cfg: DataBuildConfig):
 def _build_co3d_raw(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.co3d
     root = Path(data_cfg.root)
-    augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
     categories = data_cfg.categories
     split_map = data_cfg.split_map or None
     return Co3dRawDataset(
         Co3dRawConfig(
             root=root,
             split=str(split),
-            clip_frames=_clip_frames(cfg),
-            image_size=_image_size(cfg),
-            queries_per_clip=_queries_per_clip(cfg),
-            hard_query_ratio=_hard_query_ratio(cfg),
-            prob_t_tgt_equals_t_cam=_prob_t_tgt_equals_t_cam(cfg),
-            **_query_timestep_delta_kwargs(cfg),
-            training=(split == "train"),
+            **_dataset_kwargs(split, cfg),
             split_map=split_map,
             max_scenes=data_cfg.max_scenes,
             categories=categories or None,
             min_viewpoint_quality=data_cfg.min_viewpoint_quality,
             use_depth_masks=data_cfg.use_depth_masks,
-            augment=augment_cfg,
-            bad_sample_registry_path=_bad_sample_registry_path(cfg),
-            max_sample_retries=_bad_sample_max_retries(cfg),
         )
     )
 
@@ -221,24 +217,14 @@ def _build_co3d_raw(split: str, cfg: DataBuildConfig):
 def _build_kubric_full_robust(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.kubric_full
     root = Path(data_cfg.root)
-    augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
     split_map_raw = data_cfg.tfds_split_map or {"train": "train", "val": "validation", "test": "validation"}
     split_map = split_map_raw if isinstance(split_map_raw, dict) else {"train": "train", "val": "validation", "test": "validation"}
     return KubricFullRobustDataset(
         KubricFullRobustConfig(
             root=root,
             split=str(split),
-            clip_frames=_clip_frames(cfg),
-            image_size=_image_size(cfg),
-            queries_per_clip=_queries_per_clip(cfg),
-            hard_query_ratio=_hard_query_ratio(cfg),
-            prob_t_tgt_equals_t_cam=_prob_t_tgt_equals_t_cam(cfg),
-            **_query_timestep_delta_kwargs(cfg),
-            training=(split == "train"),
+            **_dataset_kwargs(split, cfg),
             max_scenes=cfg.data.kubric_full.max_scenes,
-            augment=augment_cfg,
-            bad_sample_registry_path=_bad_sample_registry_path(cfg),
-            max_sample_retries=_bad_sample_max_retries(cfg),
             tfds_split_map=split_map,
             shuffle_buffer_size=cfg.data.kubric_full.shuffle_buffer_size,
             eval_cache_max_items=cfg.data.kubric_full.eval_cache_max_items,
@@ -251,7 +237,6 @@ def _build_kubric_full_robust(split: str, cfg: DataBuildConfig):
 def _build_kubric_full_robust_preprocess(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.kubric_full
     root = Path(data_cfg.processed_root)
-    augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
     split_map = data_cfg.processed_split_map or {"train": "train", "val": "validation", "test": "validation"}
     mmap_mode_raw = data_cfg.mmap_mode
     mmap_mode = None if str(mmap_mode_raw).lower() in {"", "none", "false"} else str(mmap_mode_raw)
@@ -259,16 +244,8 @@ def _build_kubric_full_robust_preprocess(split: str, cfg: DataBuildConfig):
         KubricFullRobustPreprocessConfig(
             root=root,
             split=str(split),
-            clip_frames=_clip_frames(cfg),
-            image_size=_image_size(cfg),
-            queries_per_clip=_queries_per_clip(cfg),
-            hard_query_ratio=_hard_query_ratio(cfg),
-            prob_t_tgt_equals_t_cam=_prob_t_tgt_equals_t_cam(cfg),
-            training=(split == "train"),
+            **_dataset_kwargs(split, cfg),
             max_scenes=data_cfg.max_scenes,
-            augment=augment_cfg,
-            bad_sample_registry_path=_bad_sample_registry_path(cfg),
-            max_sample_retries=_bad_sample_max_retries(cfg),
             split_map=split_map,
             mmap_mode=mmap_mode,
             eval_cache_max_items=data_cfg.eval_cache_max_items,
@@ -281,24 +258,14 @@ def _build_kubric_full_robust_preprocess(split: str, cfg: DataBuildConfig):
 def _build_pointodyssey_raw(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.pointodyssey
     root = Path(data_cfg.root)
-    augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
     split_map = data_cfg.split_map or None
     return PointOdysseyRawDataset(
         PointOdysseyRawConfig(
             root=root,
             split=str(split),
-            clip_frames=_clip_frames(cfg),
-            image_size=_image_size(cfg),
-            queries_per_clip=_queries_per_clip(cfg),
-            hard_query_ratio=_hard_query_ratio(cfg),
-            prob_t_tgt_equals_t_cam=_prob_t_tgt_equals_t_cam(cfg),
-            **_query_timestep_delta_kwargs(cfg),
-            training=(split == "train"),
+            **_dataset_kwargs(split, cfg),
             split_map=split_map,
             max_scenes=data_cfg.max_scenes,
-            augment=augment_cfg,
-            bad_sample_registry_path=_bad_sample_registry_path(cfg),
-            max_sample_retries=_bad_sample_max_retries(cfg),
             max_cached_scenes=data_cfg.max_cached_scenes,
             val_clips_per_scene=data_cfg.val_clips_per_scene,
         )
@@ -308,7 +275,6 @@ def _build_pointodyssey_raw(split: str, cfg: DataBuildConfig):
 def _build_virtual_kitti2_raw(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.virtual_kitti2
     root = Path(data_cfg.root)
-    augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
     split_scenes = data_cfg.split_scenes or None
     variants = data_cfg.variants
     camera_ids = data_cfg.camera_ids
@@ -316,20 +282,11 @@ def _build_virtual_kitti2_raw(split: str, cfg: DataBuildConfig):
         VirtualKitti2RawConfig(
             root=root,
             split=str(split),
-            clip_frames=_clip_frames(cfg),
-            image_size=_image_size(cfg),
-            queries_per_clip=_queries_per_clip(cfg),
-            hard_query_ratio=_hard_query_ratio(cfg),
-            prob_t_tgt_equals_t_cam=_prob_t_tgt_equals_t_cam(cfg),
-            **_query_timestep_delta_kwargs(cfg),
-            training=(split == "train"),
+            **_dataset_kwargs(split, cfg),
             split_scenes=split_scenes,
             variants=variants or None,
             camera_ids=camera_ids or [0],
             max_scenes=data_cfg.max_scenes,
-            augment=augment_cfg,
-            bad_sample_registry_path=_bad_sample_registry_path(cfg),
-            max_sample_retries=_bad_sample_max_retries(cfg),
         )
     )
 
@@ -346,18 +303,11 @@ def _build_dynamic_replica_raw(split: str, cfg: DataBuildConfig):
     root = Path(data_cfg.root)
     reprojection = data_cfg.reprojection_self_check
     benchmark = data_cfg.benchmark_tracking
-    augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
     return DynamicReplicaRawDataset(
         DynamicReplicaRawConfig(
             root=root,
             split=_dynamic_replica_split(split, cfg),
-            clip_frames=_clip_frames(cfg),
-            image_size=_image_size(cfg),
-            queries_per_clip=_queries_per_clip(cfg),
-            hard_query_ratio=_hard_query_ratio(cfg),
-            prob_t_tgt_equals_t_cam=_prob_t_tgt_equals_t_cam(cfg),
-            **_query_timestep_delta_kwargs(cfg),
-            training=(split == "train"),
+            **_dataset_kwargs(split, cfg),
             max_scenes=data_cfg.max_scenes,
             camera_convention=data_cfg.camera_convention,
             depth_decode_mode=data_cfg.depth_decode_mode,
@@ -368,9 +318,6 @@ def _build_dynamic_replica_raw(split: str, cfg: DataBuildConfig):
             reprojection_self_check_max_scenes=reprojection.max_scenes,
             reprojection_self_check_max_frames=reprojection.max_frames,
             reprojection_self_check_max_points=reprojection.max_points_per_frame,
-            augment=augment_cfg,
-            bad_sample_registry_path=_bad_sample_registry_path(cfg),
-            max_sample_retries=_bad_sample_max_retries(cfg),
             benchmark_tracking_enabled=benchmark.enabled,
             benchmark_max_queries=benchmark.max_queries,
         )
@@ -380,19 +327,12 @@ def _build_dynamic_replica_raw(split: str, cfg: DataBuildConfig):
 def _build_mvs_synth_raw(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.mvs_synth
     root = Path(data_cfg.root)
-    augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
     split_map = data_cfg.split_map or None
     return MvsSynthRawDataset(
         MvsSynthRawConfig(
             root=root,
             split=str(split),
-            clip_frames=_clip_frames(cfg),
-            image_size=_image_size(cfg),
-            queries_per_clip=_queries_per_clip(cfg),
-            hard_query_ratio=_hard_query_ratio(cfg),
-            prob_t_tgt_equals_t_cam=_prob_t_tgt_equals_t_cam(cfg),
-            **_query_timestep_delta_kwargs(cfg),
-            training=(split == "train"),
+            **_dataset_kwargs(split, cfg),
             split_map=split_map,
             sequence_dir=data_cfg.sequence_dir,
             max_scenes=data_cfg.max_scenes,
@@ -403,9 +343,6 @@ def _build_mvs_synth_raw(split: str, cfg: DataBuildConfig):
             min_depth_valid_ratio=data_cfg.min_depth_valid_ratio,
             min_valid_frames_ratio=data_cfg.min_valid_frames_ratio,
             require_complete_frames=data_cfg.require_complete_frames,
-            augment=augment_cfg,
-            bad_sample_registry_path=_bad_sample_registry_path(cfg),
-            max_sample_retries=_bad_sample_max_retries(cfg),
         )
     )
 
@@ -425,23 +362,13 @@ def _scannet_split_file(split: str, cfg: DataBuildConfig) -> Path:
 def _build_scannet_raw(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.scannet
     root = Path(data_cfg.root)
-    augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
     return ScannetRawDataset(
         ScannetRawConfig(
             root=root,
             split_file=_scannet_split_file(split, cfg),
-            clip_frames=_clip_frames(cfg),
-            image_size=_image_size(cfg),
-            queries_per_clip=_queries_per_clip(cfg),
-            hard_query_ratio=_hard_query_ratio(cfg),
-            prob_t_tgt_equals_t_cam=_prob_t_tgt_equals_t_cam(cfg),
-            **_query_timestep_delta_kwargs(cfg),
+            **_dataset_kwargs(split, cfg),
             max_scenes=data_cfg.max_scenes,
-            training=(split == "train"),
             source=data_cfg.source,
-            augment=augment_cfg,
-            bad_sample_registry_path=_bad_sample_registry_path(cfg),
-            max_sample_retries=_bad_sample_max_retries(cfg),
         )
     )
 
@@ -449,7 +376,6 @@ def _build_scannet_raw(split: str, cfg: DataBuildConfig):
 def _build_tartanair_raw(split: str, cfg: DataBuildConfig):
     data_cfg = cfg.data.tartanair
     root = Path(data_cfg.root)
-    augment_cfg = augment_cfg_from_train_config(cfg.augmentation)
     split_map = data_cfg.split_map or None
     difficulties = data_cfg.difficulties
     intrinsics = data_cfg.intrinsics or None
@@ -457,13 +383,7 @@ def _build_tartanair_raw(split: str, cfg: DataBuildConfig):
         TartanairRawConfig(
             root=root,
             split=str(split),
-            clip_frames=_clip_frames(cfg),
-            image_size=_image_size(cfg),
-            queries_per_clip=_queries_per_clip(cfg),
-            hard_query_ratio=_hard_query_ratio(cfg),
-            prob_t_tgt_equals_t_cam=_prob_t_tgt_equals_t_cam(cfg),
-            **_query_timestep_delta_kwargs(cfg),
-            training=(split == "train"),
+            **_dataset_kwargs(split, cfg),
             split_map=split_map,
             camera_name=data_cfg.camera_name,
             difficulties=difficulties or ["Data_easy", "Data_hard"],
@@ -471,9 +391,6 @@ def _build_tartanair_raw(split: str, cfg: DataBuildConfig):
             split_modulo=data_cfg.split_modulo,
             max_depth_m=data_cfg.max_depth_m,
             intrinsics=intrinsics,
-            augment=augment_cfg,
-            bad_sample_registry_path=_bad_sample_registry_path(cfg),
-            max_sample_retries=_bad_sample_max_retries(cfg),
         )
     )
 
@@ -504,9 +421,9 @@ def _normalize_mixture_name(name: str) -> str:
 
 def _resolve_mixture_sources(split: str, cfg: DataBuildConfig) -> list[tuple[str, str]]:
     names = (
-        cfg.data.train_dataset_mixture
+        cfg.data.train_sources
         if split == "train"
-        else cfg.data.val_dataset_mixture
+        else cfg.data.val_sources
     )
 
     kubric_full_backend = cfg.data.kubric_full.backend.strip().lower()
@@ -544,7 +461,7 @@ def _resolve_mixture_sources(split: str, cfg: DataBuildConfig) -> list[tuple[str
 
 
 def _resolve_mixture_weights(cfg: DataBuildConfig, selected_sources: list[str]) -> list[float] | None:
-    raw = cfg.data.mixture_sampling_weights
+    raw = cfg.data.sampling_weights
     if not raw or not selected_sources:
         return None
     if isinstance(raw, (list, tuple)):
@@ -615,18 +532,7 @@ def _dataset_builder(dataset_type: str):
 
 
 def build_dataset(split: str, cfg: DataBuildConfig):
-    dataset_type = (
-        cfg.data.train_dataset_type if split == "train" else cfg.data.val_dataset_type
-    )
-    if dataset_type is None:
-        if _resolve_mixture_sources(split, cfg):
-            dataset_type = "mixture_raw"
-        else:
-            raise ValueError("No dataset type or 9Mix source list configured.")
-
-    dataset_type = _normalize_dataset_type(str(dataset_type))
-    builder = _dataset_builder(dataset_type)
-    dataset = builder(split=split, cfg=cfg)
+    dataset = _build_mixture_raw(split=split, cfg=cfg)
     if isinstance(dataset, list):
         dataset = ConcatDataset(dataset)
     configure_dataset_seeding(dataset, base_seed=cfg.seed)

@@ -9,13 +9,13 @@ from typing import Any
 
 import numpy as np
 
-from ..bad_sample_registry import BadSampleRegistry, RetryableSampleError, is_retryable_data_error
+from .bad_samples import RetryableSampleError, is_retryable_data_error
+from .base import BaseDataset
 from .kubric import (
     KubricFullRobustConfig,
     KubricFullRobustDataset,
     _dedup_str_list,
 )
-from ..sampling.augmentation import RawAugmentConfig
 
 
 _REQUIRED_FILES = (
@@ -60,14 +60,12 @@ class KubricFullRobustPreprocessDataset(KubricFullRobustDataset):
     """Loads preprocessed Kubric MOVi-F scenes and reuses robust supervision construction."""
 
     def __init__(self, config: KubricFullRobustPreprocessConfig) -> None:
-        self.cfg = config
-        self.h, self.w = config.image_size
-        self._init_dataset_seeding(namespace="kubric_full_robust_preprocess", default_seed=20260418)
-        self.augment = config.augment or RawAugmentConfig()
-        if not config.training:
-            self.augment = RawAugmentConfig()
-        self.bad_registry = BadSampleRegistry(path=config.bad_sample_registry_path)
-        self.max_sample_retries = max(1, int(config.max_sample_retries))
+        BaseDataset.__init__(
+            self,
+            config,
+            namespace="kubric_full_robust_preprocess",
+            default_seed=20260418,
+        )
         self._warned_skip_keys: set[str] = set()
 
         self.root = Path(config.root)

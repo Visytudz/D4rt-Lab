@@ -1,0 +1,12 @@
+# @package data.tartanair
+
+root: data/tartanair/v2
+camera_name: lcam_front
+difficulties:
+  - Data_easy
+  - Data_hard
+split_modulo: 20
+split_map: {}
+max_depth_m: 1000.0
+max_scenes: null
+intrinsics: []

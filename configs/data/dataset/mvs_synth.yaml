@@ -1,0 +1,13 @@
+# @package data.mvs_synth
+
+root: data/mvs-synth/v1
+sequence_dir: ""
+split_map: {}
+split_modulo: 20
+depth_scale: 1.0
+max_depth_m: 1000.0
+depth_clip_percentile: 98.0
+min_depth_valid_ratio: 0.01
+min_valid_frames_ratio: 0.5
+require_complete_frames: false
+max_scenes: null

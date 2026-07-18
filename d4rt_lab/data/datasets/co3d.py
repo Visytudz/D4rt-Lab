@@ -11,23 +11,20 @@ from typing import Any
 import numpy as np
 import torch
 from PIL import Image
-from torch.utils.data import Dataset
+from .base import BaseDataset, DatasetConfig
 
-from ..bad_sample_registry import (
-    BadSampleRegistry,
+from .bad_samples import (
     RetryableSampleError,
     failed_paths_from_exception,
     is_retryable_data_error,
 )
 from ..sampling.queries import build_queries_from_depth
 from ..sampling.augmentation import (
-    RawAugmentConfig,
     apply_photometric_augment,
     apply_spatial_crop_images_only,
     build_augment_info,
     sample_frame_indices_with_stride,
 )
-from ..seeding import SeededDatasetMixin
 
 
 def _load_json_gz(path: Path) -> Any:
@@ -122,25 +119,13 @@ def _viewpoint_to_camera(vp: dict[str, Any], image_h: int, image_w: int) -> tupl
 
 
 @dataclass
-class Co3dRawConfig:
+class Co3dRawConfig(DatasetConfig):
     root: Path
     split: str
-    clip_frames: int
-    image_size: tuple[int, int]  # (H, W)
-    queries_per_clip: int
-    hard_query_ratio: float
-    prob_t_tgt_equals_t_cam: float
-    training: bool
-    t_src_tgt_delta_choices: tuple[int | None, ...] | None = None
-    t_src_tgt_delta_probs: tuple[float, ...] | None = None
     split_map: dict[str, str] | None = None
-    max_scenes: int | None = None
     categories: list[str] | None = None
     min_viewpoint_quality: float = 0.5
     use_depth_masks: bool = False
-    augment: RawAugmentConfig | None = None
-    bad_sample_registry_path: Path = Path("data/meta/bad_sample.json")
-    max_sample_retries: int = 64
 
 
 @dataclass
@@ -166,18 +151,11 @@ class _Scene:
     src_w: int
 
 
-class Co3dRawDataset(SeededDatasetMixin, Dataset):
+class Co3dRawDataset(BaseDataset):
     """Loads CO3D v2 from raw files and builds D4RT-compatible supervision."""
 
     def __init__(self, config: Co3dRawConfig) -> None:
-        self.cfg = config
-        self.h, self.w = config.image_size
-        self._init_dataset_seeding(namespace="co3d_raw", default_seed=20260320)
-        self.augment = config.augment or RawAugmentConfig()
-        self.bad_registry = BadSampleRegistry(path=config.bad_sample_registry_path)
-        self.max_sample_retries = max(1, int(config.max_sample_retries))
-        if not config.training:
-            self.augment = RawAugmentConfig()
+        super().__init__(config, namespace="co3d_raw", default_seed=20260320)
 
         if not config.root.exists():
             raise FileNotFoundError(f"CO3D root not found: {config.root}")

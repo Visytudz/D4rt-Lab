@@ -1,0 +1,15 @@
+# @package data.blendermvs
+
+roots:
+  - data/blendermvs/base-low-res/BlendedMVS
+  - data/blendermvs/blendermvs-plus/extracted
+  - data/blendermvs/blendermvs-plusplus/extracted
+split_map: {}
+split_modulo: 20
+max_depth_m: 1000.0
+depth_clip_percentile: 98.0
+min_depth_valid_ratio: 0.01
+min_valid_frames_ratio: 0.5
+require_complete_frames: false
+use_masked_images: false
+max_scenes: null

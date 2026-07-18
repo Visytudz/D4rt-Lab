@@ -1,0 +1,302 @@
+experiment:
+  name: d4rt_ninemix_clip48
+  seed: 42
+  output_dir: outputs/${.name}
+model:
+  input:
+    clip_frames: 48
+    image_size:
+    - 256
+    - 256
+    channels: 3
+  encoder:
+    in_channels: 3
+    hidden_dim: 1408
+    patch_size_t_h_w:
+    - 2
+    - 16
+    - 16
+    num_layers: 40
+    num_heads: 16
+    mlp_ratio: 4.3636363636
+    max_tokens: 6144
+    attention_pattern: interleaved_spatial_and_global
+  aspect_ratio_token:
+    enabled: true
+    hidden_dim: 1408
+  memory_projection:
+    input_dim: 1408
+    output_dim: 1280
+  query_embedding:
+    input_channels: 3
+    hidden_dim: 1280
+    clip_frames: 48
+    uv_num_bands: 8
+    local_patch_enabled: true
+    local_patch_size: 9
+  decoder:
+    hidden_dim: 1280
+    num_layers: 8
+    num_heads: 16
+    mlp_ratio: 3.5
+  heads:
+    hidden_dim: 1280
+runtime:
+  devices: auto
+  num_nodes: 1
+  strategy: auto
+  mixed_precision: true
+dataloader:
+  batch_size: 2
+  train_batch_size: 2
+  val_batch_size: 2
+  num_workers: 2
+  train_num_workers: 4
+  val_num_workers: 1
+  pin_memory: true
+  persistent_workers: true
+  prefetch_factor: 1
+  train_prefetch_factor: 2
+  timeout: 300
+  train_drop_last: true
+  val_drop_last: false
+data:
+  clip_frames: 48
+  image_size:
+  - 256
+  - 256
+  bad_sample_registry:
+    path: data/meta/bad_sample.json
+    max_retries: 64
+  train_sources:
+  - pointodyssey
+  - dynamic_replica
+  - kubric_full
+  - tartanair
+  - virtual_kitti2
+  - scannet
+  - blendermvs
+  - co3d
+  - mvs_synth
+  val_sources:
+  - pointodyssey
+  - dynamic_replica
+  - kubric_full
+  - tartanair
+  - virtual_kitti2
+  - scannet
+  sampling_weights:
+    pointodyssey: 1.0
+    dynamic_replica: 1.2
+    kubric_full: 0.8
+    tartanair: 1.6
+    virtual_kitti2: 1.2
+    scannet: 1.3
+    blendermvs: 1.8
+    co3d: 1.3
+    mvs_synth: 1.2
+  pointodyssey:
+    root: data/pointodyssey/v2
+    split_map:
+      train: train
+      val: test
+      test: test
+    max_cached_scenes: 2
+    max_scenes: null
+    val_clips_per_scene: 1
+  dynamic_replica:
+    root: data/dynamic-replica/v2
+    split_map:
+      train: train
+      val: valid
+      test: test
+    camera_convention: dynamic_replica_v2
+    depth_decode_mode: auto
+    depth_divisor: 10000.0
+    max_scenes: null
+    benchmark_tracking:
+      enabled: false
+      max_queries: 0
+    reprojection_self_check:
+      enabled: false
+      max_frames: 0
+      max_points_per_frame: 0
+      max_scenes: 0
+      median_threshold_px: 0.0
+      mode: 'off'
+  kubric_full:
+    root: data/kubric_full/movi-f_full/512x512
+    backend: preprocess
+    processed_root: data/kubric_full/kubric_full_process_v1
+    mmap_mode: r
+    eval_cache_max_items: 2
+    tfds_split_map:
+      train: train
+      val: validation
+      test: validation
+    processed_split_map: {}
+    shuffle_buffer_size: 64
+    max_scenes: null
+    benchmark_tracking:
+      enabled: false
+      max_queries: 0
+  tartanair:
+    root: data/tartanair/v2
+    camera_name: lcam_front
+    difficulties:
+    - Data_easy
+    - Data_hard
+    split_modulo: 20
+    split_map: {}
+    max_depth_m: 1000.0
+    max_scenes: null
+    intrinsics: []
+  virtual_kitti2:
+    root: data/virtual-kitti-2/v2
+    variants:
+    - clone
+    camera_ids:
+    - 0
+    split_scenes: {}
+    max_scenes: null
+  scannet:
+    root: data/scannet/plus-v2/data
+    split_files:
+      train: data/scannet/plus-v2/splits/nvs_sem_train.txt
+      val: data/scannet/plus-v2/splits/nvs_sem_val.txt
+      test: data/scannet/plus-v2/splits/nvs_test.txt
+    source: iphone_rgbd
+    max_scenes: null
+  blendermvs:
+    roots:
+    - data/blendermvs/base-low-res/BlendedMVS
+    - data/blendermvs/blendermvs-plus/extracted
+    - data/blendermvs/blendermvs-plusplus/extracted
+    split_map: {}
+    split_modulo: 20
+    max_depth_m: 1000.0
+    depth_clip_percentile: 98.0
+    min_depth_valid_ratio: 0.01
+    min_valid_frames_ratio: 0.5
+    require_complete_frames: false
+    use_masked_images: false
+    max_scenes: null
+  co3d:
+    root: data/co3d/v2
+    use_depth_masks: true
+    categories: []
+    split_map: {}
+    min_viewpoint_quality: 0.0
+    max_scenes: null
+  mvs_synth:
+    root: data/mvs-synth/v1
+    sequence_dir: ''
+    split_map: {}
+    split_modulo: 20
+    depth_scale: 1.0
+    max_depth_m: 1000.0
+    depth_clip_percentile: 98.0
+    min_depth_valid_ratio: 0.01
+    min_valid_frames_ratio: 0.5
+    require_complete_frames: false
+    max_scenes: null
+train_sampling:
+  queries_per_clip: 4096
+  hard_query_ratio: 0.2
+  hard_query_source: depth_and_motion_boundaries_sobel
+  timestep_sampling:
+    t_src: uniform
+    t_tgt: uniform
+    t_cam: uniform
+    prob_t_tgt_equals_t_cam: 0.4
+    t_src_tgt_delta_mode: static_local_global
+    t_src_tgt_delta_choices: null
+    t_src_tgt_delta_probs: null
+loss:
+  xyz_3d:
+    enabled: true
+    weight: 1.0
+    normalize_by_mean_depth: true
+    use_signed_log: true
+  uv_2d:
+    enabled: true
+    weight: 0.1
+  visibility:
+    enabled: true
+    weight: 0.1
+  displacement:
+    enabled: true
+    weight: 0.1
+  normal:
+    enabled: true
+    weight: 0.4
+  confidence:
+    enabled: true
+    weight: 0.2
+    confidence_weights_xyz_error: true
+    confidence_target:
+      enabled: false
+      weight: 0.2
+  reprojection_uv_from_xyz:
+    enabled: false
+    weight: 0.05
+    detach_xyz: false
+    robust_loss: huber
+    huber_delta_px: 8.0
+optimizer:
+  weight_decay: 0.03
+  gradient_clip_norm: 10.0
+  learning_rate:
+    warmup_steps: 500
+    peak_lr: 4.0e-06
+    final_lr: 4.0e-07
+augmentation:
+  color_jitter:
+    enabled: false
+    probability: 0.0
+    brightness: 0.0
+    contrast: 0.0
+    saturation: 0.0
+    hue: 0.0
+  color_drop:
+    enabled: false
+    probability: 0.0
+  gaussian_blur:
+    enabled: false
+    probability: 0.0
+  random_crop:
+    enabled: false
+    probability: 0.0
+    scale_min_max:
+    - 1.0
+    - 1.0
+    aspect_ratio_min_max:
+    - 1.0
+    - 1.0
+    random_zoom_in_probability: 0.0
+    aspect_ratio_sampling: log_uniform
+    sampling_domain: original
+    boundary_mode: rejection
+  temporal_subsample:
+    enabled: true
+    stride_min: 1
+    stride_max: 2
+    stride_sampling: random
+schedule:
+  total_steps: 30000
+checkpoint:
+  save_every_steps: 1000
+  keep_last_k: 5
+  keep_best_by: val_loss_total
+  resume_checkpoint_path: null
+logging:
+  log_every_steps: 100
+  validate_every_steps: 2000
+  validate_max_batches: 64
+initialization:
+  source: artifact
+  artifact_path: checkpoints/OpenD4RT_32CLIP_9Dataset_NoAUG/opend4rt_48init.model.pt
+  encoder_pretrained:
+    type: videomae_v2
+    path: ''
+    must_succeed: true

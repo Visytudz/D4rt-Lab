@@ -1,0 +1,10 @@
+# @package _global_
+
+defaults:
+  - checkpoint: default
+  - logging: default
+  - runtime: eight_gpu
+  - optimizer: adamw
+  - schedule: cosine_30k
+  - experiment: d4rt_48
+  - _self_

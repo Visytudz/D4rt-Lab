@@ -10,17 +10,15 @@ import numpy as np
 import torch
 import cv2
 from PIL import Image
-from torch.utils.data import Dataset
+from .base import BaseDataset, DatasetConfig
 
-from ..bad_sample_registry import (
-    BadSampleRegistry,
+from .bad_samples import (
     RetryableSampleError,
     failed_paths_from_exception,
     is_retryable_data_error,
 )
 from ..sampling.queries import _compute_normal_map
 from ..sampling.augmentation import (
-    RawAugmentConfig,
     apply_photometric_augment,
     apply_spatial_crop_images_only,
     build_augment_info,
@@ -28,7 +26,6 @@ from ..sampling.augmentation import (
     sample_frame_indices_with_stride,
     sample_hard_query_flags,
 )
-from ..seeding import SeededDatasetMixin
 
 
 def _read_rgb(path: Path, width: int, height: int) -> np.ndarray:
@@ -397,24 +394,12 @@ def _parse_extrinsics(path: Path) -> dict[tuple[int, int], np.ndarray]:
 
 
 @dataclass
-class VirtualKitti2RawConfig:
+class VirtualKitti2RawConfig(DatasetConfig):
     root: Path
     split: str
-    clip_frames: int
-    image_size: tuple[int, int]  # (H, W)
-    queries_per_clip: int
-    hard_query_ratio: float
-    prob_t_tgt_equals_t_cam: float
-    training: bool
-    t_src_tgt_delta_choices: tuple[int | None, ...] | None = None
-    t_src_tgt_delta_probs: tuple[float, ...] | None = None
     split_scenes: dict[str, list[str]] | None = None
     variants: list[str] | None = None
     camera_ids: list[int] | None = None
-    max_scenes: int | None = None
-    augment: RawAugmentConfig | None = None
-    bad_sample_registry_path: Path = Path("data/meta/bad_sample.json")
-    max_sample_retries: int = 64
 
 
 @dataclass
@@ -433,18 +418,11 @@ class _Scene:
     src_w: int
 
 
-class VirtualKitti2RawDataset(SeededDatasetMixin, Dataset):
+class VirtualKitti2RawDataset(BaseDataset):
     """Loads Virtual KITTI 2 RGBD + calibration and builds depth-projected supervision."""
 
     def __init__(self, config: VirtualKitti2RawConfig) -> None:
-        self.cfg = config
-        self.h, self.w = config.image_size
-        self._init_dataset_seeding(namespace="virtual_kitti2_raw", default_seed=20260320)
-        self.augment = config.augment or RawAugmentConfig()
-        self.bad_registry = BadSampleRegistry(path=config.bad_sample_registry_path)
-        self.max_sample_retries = max(1, int(config.max_sample_retries))
-        if not config.training:
-            self.augment = RawAugmentConfig()
+        super().__init__(config, namespace="virtual_kitti2_raw", default_seed=20260320)
 
         if not config.root.exists():
             raise FileNotFoundError(f"Virtual KITTI 2 root not found: {config.root}")

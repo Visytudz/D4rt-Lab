@@ -1,4 +1,9 @@
 # @package _global_
+
+defaults:
+  - initialization: d4rt_48init
+  - _self_
+
 model:
   input:
     clip_frames: 48

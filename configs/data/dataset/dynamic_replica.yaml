@@ -1,0 +1,11 @@
+# @package data.dynamic_replica
+
+root: data/dynamic-replica/v2
+split_map:
+  train: train
+  val: valid
+  test: test
+camera_convention: dynamic_replica_v2
+depth_decode_mode: auto
+depth_divisor: 10000.0
+max_scenes: null

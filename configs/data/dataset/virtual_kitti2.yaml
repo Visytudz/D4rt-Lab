@@ -1,0 +1,9 @@
+# @package data.virtual_kitti2
+
+root: data/virtual-kitti-2/v2
+variants:
+  - clone
+camera_ids:
+  - 0
+split_scenes: {}
+max_scenes: null
