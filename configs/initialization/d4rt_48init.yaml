@@ -1,0 +1,4 @@
+# @package _global_
+initialization:
+  source: artifact
+  artifact_path: checkpoints/OpenD4RT_32CLIP_9Dataset_NoAUG/opend4rt_48init.model.pt

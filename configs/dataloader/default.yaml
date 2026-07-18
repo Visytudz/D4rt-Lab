@@ -1,0 +1,13 @@
+# @package _global_
+dataloader:
+  batch_size: 2
+  train_batch_size: 2
+  val_batch_size: 2
+  num_workers: 2
+  train_num_workers: 4
+  val_num_workers: 1
+  pin_memory: true
+  persistent_workers: true
+  prefetch_factor: 1
+  train_prefetch_factor: 2
+  timeout: 300

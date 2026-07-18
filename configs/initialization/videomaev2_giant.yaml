@@ -1,0 +1,7 @@
+# @package _global_
+initialization:
+  source: encoder_pretrained
+  encoder_pretrained:
+    type: videomae_v2
+    path: checkpoints/VideoMAE2/weights/mae-g/vit_g_hybrid_pt_1200e.pth
+    must_succeed: true

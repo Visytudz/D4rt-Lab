@@ -1,0 +1,35 @@
+# @package _global_
+model:
+  input:
+    clip_frames: 48
+    image_size: [256, 256]
+    channels: 3
+  encoder:
+    in_channels: 3
+    hidden_dim: 1408
+    patch_size_t_h_w: [2, 16, 16]
+    num_layers: 40
+    num_heads: 16
+    mlp_ratio: 4.3636363636
+    max_tokens: 6144
+    attention_pattern: interleaved_spatial_and_global
+  aspect_ratio_token:
+    enabled: true
+    hidden_dim: 1408
+  memory_projection:
+    input_dim: 1408
+    output_dim: 1280
+  query_embedding:
+    input_channels: 3
+    hidden_dim: 1280
+    clip_frames: 48
+    uv_num_bands: 8
+    local_patch_enabled: true
+    local_patch_size: 9
+  decoder:
+    hidden_dim: 1280
+    num_layers: 8
+    num_heads: 16
+    mlp_ratio: 3.5
+  heads:
+    hidden_dim: 1280

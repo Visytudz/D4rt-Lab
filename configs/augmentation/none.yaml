@@ -1,0 +1,18 @@
+# @package _global_
+augmentation:
+  color_jitter:
+    enabled: false
+  color_drop:
+    enabled: false
+    probability: 0.0
+  gaussian_blur:
+    enabled: false
+    probability: 0.0
+  random_crop:
+    enabled: false
+    scale_min_max: [1.0, 1.0]
+    random_zoom_in_probability: 0.0
+  temporal_subsample:
+    enabled: true
+    stride_min: 1
+    stride_max: 2

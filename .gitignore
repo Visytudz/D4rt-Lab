@@ -1,0 +1,16 @@
+__pycache__/
+*.egg-info
+.cache/
+.DS_Store
+
+.venv/
+.codex/
+.agents/
+.vscode/
+
+docs/
+output/
+scripts/
+datasets/
+notebooks/
+checkpoints/

@@ -1,0 +1,32 @@
+# @package _global_
+loss:
+  total: weighted_sum
+  xyz_3d:
+    enabled: true
+    weight: 1.0
+    normalize_by_mean_depth: true
+    value_transform: sign_x_log1p_abs_x
+  uv_2d:
+    enabled: true
+    weight: 0.1
+  visibility:
+    enabled: true
+    weight: 0.1
+  displacement:
+    enabled: true
+    weight: 0.1
+  normal:
+    enabled: true
+    weight: 0.4
+  confidence:
+    enabled: true
+    mode: main_text
+    weight: 0.2
+    confidence_penalty: -log(c)
+    confidence_weights_xyz_error: true
+    lconf_ablation:
+      enabled: false
+      weight: 0.2
+  apply_only_where_gt_available: true
+  reprojection_uv_from_xyz:
+    enabled: false

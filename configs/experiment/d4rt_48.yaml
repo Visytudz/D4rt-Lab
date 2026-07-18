@@ -1,0 +1,5 @@
+# @package _global_
+experiment:
+  name: d4rt_ninemix_clip48
+  seed: 42
+  output_dir: output/d4rt_ninemix_clip48

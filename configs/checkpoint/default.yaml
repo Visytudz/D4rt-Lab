@@ -1,0 +1,5 @@
+# @package _global_
+checkpoint:
+  step_save_every_steps: 1000
+  keep_last_k: 5
+  keep_best_by: val_loss_total

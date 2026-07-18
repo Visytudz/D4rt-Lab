@@ -1,0 +1,28 @@
+defaults:
+  - d4rt_lab_schema
+  - model: d4rt_vit_g_48
+  - initialization: d4rt_48init
+  - data: ninemix_clip48
+  - loss: d4rt
+  - augmentation: none
+  - schedule: cosine_30k
+  - checkpoint: default
+  - logging: default
+  - runtime: eight_gpu
+  - dataloader: default
+  - optimizer: adamw
+  - experiment: d4rt_48
+  - _self_
+
+launch:
+  train_manifest: null
+  val_manifest: null
+  resume_checkpoint_path: null
+  tensorboard: false
+
+hydra:
+  job:
+    chdir: false
+  run:
+    dir: ${experiment.output_dir}
+  output_subdir: hydra
