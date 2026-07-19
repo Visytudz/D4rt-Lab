@@ -5,6 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 
+# -----------------------------------------------------------------------------
+# Data loading infrastructure
+# -----------------------------------------------------------------------------
+
+
 @dataclass
 class BadSampleConfig:
     path: str = "data/meta/bad_sample.json"
@@ -42,6 +47,11 @@ class ReprojectionCheckConfig:
     max_scenes: int = 0
     median_threshold_px: float = 0.0
     mode: str = "off"
+
+
+# -----------------------------------------------------------------------------
+# Dataset-specific configuration
+# -----------------------------------------------------------------------------
 
 
 @dataclass
@@ -153,6 +163,11 @@ class MVSSynthConfig:
     max_scenes: int | None = None
 
 
+# -----------------------------------------------------------------------------
+# Dataset collection and mixture configuration
+# -----------------------------------------------------------------------------
+
+
 @dataclass
 class DataConfig:
     clip_frames: int = 48
@@ -170,6 +185,11 @@ class DataConfig:
     blendermvs: BlendedMVSConfig = field(default_factory=BlendedMVSConfig)
     co3d: CO3DConfig = field(default_factory=CO3DConfig)
     mvs_synth: MVSSynthConfig = field(default_factory=MVSSynthConfig)
+
+
+# -----------------------------------------------------------------------------
+# Query and timestep sampling
+# -----------------------------------------------------------------------------
 
 
 @dataclass
@@ -191,6 +211,11 @@ class TrainSamplingConfig:
     timestep_sampling: TimestepSamplingConfig = field(
         default_factory=TimestepSamplingConfig
     )
+
+
+# -----------------------------------------------------------------------------
+# Data augmentation
+# -----------------------------------------------------------------------------
 
 
 @dataclass
@@ -232,6 +257,11 @@ class AugmentationConfig:
     gaussian_blur: ToggleAugmentationConfig = field(default_factory=ToggleAugmentationConfig)
     random_crop: RandomCropConfig = field(default_factory=RandomCropConfig)
     temporal_subsample: TemporalSubsampleConfig = field(default_factory=TemporalSubsampleConfig)
+
+
+# -----------------------------------------------------------------------------
+# Builder input boundary
+# -----------------------------------------------------------------------------
 
 
 @dataclass
