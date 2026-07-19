@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 
 @dataclass
 class BadSampleConfig:
-    path: str = "data/meta/bad_sample.json"
+    path: str = "datasets/meta/bad_sample.json"
     max_retries: int = 64
 
 
@@ -56,7 +56,7 @@ class ReprojectionCheckConfig:
 
 @dataclass
 class PointOdysseyConfig:
-    root: str = "data/pointodyssey/v2"
+    root: str = "datasets/pointodyssey/v1.2"
     split_map: dict[str, str] = field(default_factory=dict)
     max_cached_scenes: int = 2
     max_scenes: int | None = None
@@ -65,7 +65,7 @@ class PointOdysseyConfig:
 
 @dataclass
 class DynamicReplicaConfig:
-    root: str = "data/dynamic-replica/v2"
+    root: str = "datasets/dynamic-replica/v2"
     split_map: dict[str, str] = field(default_factory=dict)
     camera_convention: str = "dynamic_replica_v2"
     depth_decode_mode: str = "auto"
@@ -81,9 +81,9 @@ class DynamicReplicaConfig:
 
 @dataclass
 class KubricConfig:
-    root: str = "data/kubric_full/movi-f_full/512x512"
+    root: str = "datasets/kubric_full/movi-f_full/512x512"
     backend: str = "preprocess"
-    processed_root: str = "data/kubric_full/kubric_full_process_v1"
+    processed_root: str = "datasets/kubric_full/kubric_full_process_v1"
     mmap_mode: str = "r"
     eval_cache_max_items: int = 2
     tfds_split_map: dict[str, str] = field(default_factory=dict)
@@ -97,7 +97,7 @@ class KubricConfig:
 
 @dataclass
 class TartanAirConfig:
-    root: str = "data/tartanair/v2"
+    root: str = "datasets/tartanair/v2"
     camera_name: str = "lcam_front"
     difficulties: list[str] = field(default_factory=list)
     split_modulo: int = 20
@@ -109,7 +109,7 @@ class TartanAirConfig:
 
 @dataclass
 class VirtualKitti2Config:
-    root: str = "data/virtual-kitti-2/v2"
+    root: str = "datasets/virtual-kitti-2/v2"
     variants: list[str] = field(default_factory=list)
     camera_ids: list[int] = field(default_factory=list)
     split_scenes: dict[str, list[str]] = field(default_factory=dict)
@@ -118,7 +118,7 @@ class VirtualKitti2Config:
 
 @dataclass
 class ScanNetConfig:
-    root: str = "data/scannet/plus-v2/data"
+    root: str = "datasets/scannet/plus-v2/data"
     split_files: dict[str, str] = field(default_factory=dict)
     source: str = "iphone_rgbd"
     max_scenes: int | None = None
@@ -140,7 +140,7 @@ class BlendedMVSConfig:
 
 @dataclass
 class CO3DConfig:
-    root: str = "data/co3d/v2"
+    root: str = "datasets/co3d/v2"
     use_depth_masks: bool = True
     categories: list[str] = field(default_factory=list)
     split_map: dict[str, str] = field(default_factory=dict)
@@ -150,7 +150,7 @@ class CO3DConfig:
 
 @dataclass
 class MVSSynthConfig:
-    root: str = "data/mvs-synth/v1"
+    root: str = "datasets/mvs-synth/v1"
     sequence_dir: str = ""
     split_map: dict[str, str] = field(default_factory=dict)
     split_modulo: int = 20

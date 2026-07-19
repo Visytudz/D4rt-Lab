@@ -1,6 +1,6 @@
 # @package data.virtual_kitti2
 
-root: data/virtual-kitti-2/v2
+root: datasets/virtual-kitti-2/v2
 variants:
   - clone
 camera_ids:

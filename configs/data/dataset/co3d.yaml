@@ -1,6 +1,6 @@
 # @package data.co3d
 
-root: data/co3d/v2
+root: datasets/co3d/v2
 use_depth_masks: true
 categories: []
 split_map: {}

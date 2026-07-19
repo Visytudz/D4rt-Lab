@@ -1,9 +1,9 @@
 # @package data.blendermvs
 
 roots:
-  - data/blendermvs/base-low-res/BlendedMVS
-  - data/blendermvs/blendermvs-plus/extracted
-  - data/blendermvs/blendermvs-plusplus/extracted
+  - datasets/blendermvs/base-low-res/BlendedMVS
+  - datasets/blendermvs/blendermvs-plus/extracted
+  - datasets/blendermvs/blendermvs-plusplus/extracted
 split_map: {}
 split_modulo: 20
 max_depth_m: 1000.0

@@ -1,9 +1,9 @@
 # @package data.scannet
 
-root: data/scannet/plus-v2/data
+root: datasets/scannet/plus-v2/data
 split_files:
-  train: data/scannet/plus-v2/splits/nvs_sem_train.txt
-  val: data/scannet/plus-v2/splits/nvs_sem_val.txt
-  test: data/scannet/plus-v2/splits/nvs_test.txt
+  train: datasets/scannet/plus-v2/splits/nvs_sem_train.txt
+  val: datasets/scannet/plus-v2/splits/nvs_sem_val.txt
+  test: datasets/scannet/plus-v2/splits/nvs_test.txt
 source: iphone_rgbd
 max_scenes: null

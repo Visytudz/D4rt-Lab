@@ -1,8 +1,8 @@
 # @package data.kubric_full
 
-root: data/kubric_full/movi-f_full/512x512
+root: datasets/kubric_full/movi-f_full/512x512
 backend: preprocess
-processed_root: data/kubric_full/kubric_full_process_v1
+processed_root: datasets/kubric_full/kubric_full_process_v1
 mmap_mode: r
 eval_cache_max_items: 2
 tfds_split_map:

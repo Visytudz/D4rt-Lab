@@ -20,7 +20,7 @@ data:
   - 256
   - 256
   bad_sample_registry:
-    path: data/meta/bad_sample.json
+    path: datasets/meta/bad_sample.json
     max_retries: 64
   train_sources:
   - pointodyssey

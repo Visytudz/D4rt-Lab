@@ -1,6 +1,6 @@
 # @package data.mvs_synth
 
-root: data/mvs-synth/v1
+root: datasets/mvs-synth/v1
 sequence_dir: ""
 split_map: {}
 split_modulo: 20

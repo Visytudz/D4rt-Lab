@@ -42,7 +42,7 @@ class DatasetConfig:
     t_src_tgt_delta_probs: tuple[float, ...] | None = None
     max_scenes: int | None = None
     augment: RawAugmentConfig | None = None
-    bad_sample_registry_path: Path = Path("data/meta/bad_sample.json")
+    bad_sample_registry_path: Path = Path("datasets/meta/bad_sample.json")
     max_sample_retries: int = 64
 
 

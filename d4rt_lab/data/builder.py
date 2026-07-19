@@ -169,7 +169,7 @@ def _blendermvs_roots(cfg: DataBuildConfig) -> list[Path]:
     roots = [Path(item) for item in cfg.data.blendermvs.roots]
     if roots:
         return roots
-    return [Path("data/blendermvs/base-low-res/BlendedMVS")]
+    return [Path("datasets/blendermvs/base-low-res/BlendedMVS")]
 
 
 def _build_blendedmvs_raw(split: str, cfg: DataBuildConfig):
@@ -352,9 +352,9 @@ def _scannet_split_file(split: str, cfg: DataBuildConfig) -> Path:
     if picked:
         return Path(picked)
     defaults = {
-        "train": "data/scannet/plus-v2/splits/nvs_sem_train.txt",
-        "val": "data/scannet/plus-v2/splits/nvs_sem_val.txt",
-        "test": "data/scannet/plus-v2/splits/nvs_test.txt",
+        "train": "datasets/scannet/plus-v2/splits/nvs_sem_train.txt",
+        "val": "datasets/scannet/plus-v2/splits/nvs_sem_val.txt",
+        "test": "datasets/scannet/plus-v2/splits/nvs_test.txt",
     }
     return Path(defaults.get(split, defaults["val"]))
 

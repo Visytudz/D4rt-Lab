@@ -1,6 +1,6 @@
 # @package data.pointodyssey
 
-root: data/pointodyssey/v2
+root: datasets/pointodyssey/v1.2
 split_map:
   train: train
   val: test

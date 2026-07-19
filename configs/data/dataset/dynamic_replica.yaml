@@ -1,6 +1,6 @@
 # @package data.dynamic_replica
 
-root: data/dynamic-replica/v2
+root: datasets/dynamic-replica/v2
 split_map:
   train: train
   val: valid
